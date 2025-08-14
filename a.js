@@ -26,5 +26,13 @@ a.sign = async (d, k) => {
     nacl.sign(new TextEncoder().encode(ts + h), decode(k.substring(44))),
   );
 
-  return s;
+  return k.substring(0, 44) + s;
+};
+
+a.open = async (m) => {
+  const o = new TextDecoder().decode(
+    nacl.sign.open(decode(m.substring(44)), decode(m.substring(0, 44))),
+  );
+
+  return o;
 };
