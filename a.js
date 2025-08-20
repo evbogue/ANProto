@@ -19,9 +19,8 @@ a.hash = async (d) => {
   );
 };
 
-a.sign = async (d, k) => {
+a.sign = async (h, k) => {
   const ts = Date.now();
-  const h = await a.hash(d);
   const s = encode(
     nacl.sign(new TextEncoder().encode(ts + h), decode(k.substring(44))),
   );
