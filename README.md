@@ -1,8 +1,21 @@
 # ANProto
 
+the **A**uthenticated and **N**on-networked protocol or **AN**other protocol
+
+(we wanted aproto, but the dot com was taken)
+
+[anproto.com](https://anproto.com)
+
+try it at [anproto.com/try](https://anproto.com/try) or use a client such as [wiredove](https://wiredove.net/)
+
+
 ed25519 keypairs sign timestamp + hash in base64
 
-### code
++ ANProto is the spiritual successor to [secure-scuttlebot](https://scuttlebot.io), but without all of the extra stuff that is difficult to maintain. 
++ANProto is an attempt to argue that [ATProto](https://atprotocom.) is too involved in it's own networking infrastructure to be usefully decentralized. 
++ ANProto operates under the working theory that [Nostr](https://fiatjaf.com/nostr.html) will never reach anyone besides Bitcoiners. 
+
+### the JavaScript library!
 
 use Deno or your browser
 
