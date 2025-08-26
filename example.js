@@ -1,19 +1,18 @@
 import { Hono } from "jsr:@hono/hono";
 import { serveStatic } from 'jsr:@hono/hono/deno'
+import { marked } from 'https://esm.sh/gh/evbogue/bog5@de70376265/lib/marked.esm.js'
 
 import { foot, head } from "./template.js";
 
 const app = new Hono();
 
+const readme = await Deno.readTextFile('./README.md')
+
 app.get('/', async (c) => {
   const content = `
     <div id="scroller">
       <div class='message'>
-        <h1>ANProto</h1>
-	<p>Try ANProto online:</p>
-        <p><a href="./try">Try ANProto</a></p>
-	<p>The Official ANProto Client:
-        <p><a href="https://wiredove.net/">Wiredove</a></p>
+        ${await marked(readme)} 
       </div>
     </div>
   `
@@ -33,7 +32,7 @@ app.get('/try', async (c) => {
 
   <p><strong>Step 1.</strong> Generate an ed25519 keypair</p>
   
-  <code>const kp = await a.gen()</code>
+  <code>const kp = await an.gen()</code>
 
   <input style='width: 100%;' id='key' placeholder='Make a keypair'></input>
 
@@ -45,7 +44,7 @@ app.get('/try', async (c) => {
 
   <p><strong>Step 2.</strong> Hash your blob with sha256</p>
 
-  <code>const hash = await a.hash(content)</code>
+  <code>const hash = await an.hash(content)</code>
   
   <input style='width: 100%;' id='content' placeholder='Write a message'></input>
 
@@ -59,7 +58,7 @@ app.get('/try', async (c) => {
 
   <p><strong>Step 3.</strong> Sign the ANProto message</p>
 
-  <code>const sig = await a.sign(hash, keypair)</code>
+  <code>const sig = await an.sign(hash, keypair)</code>
 
   <input style='width: 100%' id='sig'></input>
 
@@ -70,7 +69,7 @@ app.get('/try', async (c) => {
 
   <p><strong>Step 4.</strong> Open the ANProto message</p>
 
-  <code>const opened = await a.open(msg)</code>  
+  <code>const opened = await an.open(msg)</code>  
 
   <input style='width: 100%;' id='openen'></input>
 
