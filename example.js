@@ -9,8 +9,8 @@ app.get('/', async (c) => {
   const content = `
     <div id="scroller">
       <div class='message'>
-        <h1>AProto</h1>
-        <p><a href="./try">Try AProto</a></p>
+        <h1>ANProto</h1>
+        <p><a href="./try">Try ANProto</a></p>
         <p><a href="https://wiredove.net/">Wiredove</a></p>
       </div>
     </div>
@@ -25,7 +25,7 @@ app.get('/try', async (c) => {
   const body = `<body>
   <div id='scroller'>
   <div class='message'>
-  <h1>Try AProto</h1>
+  <h1>Try ANProto</h1>
 
   <p><em>An Interactive Demonstration</em></p>
 
@@ -55,7 +55,7 @@ app.get('/try', async (c) => {
 
   <div class='message'>
 
-  <p><strong>Step 3.</strong> Sign an AProto message</p>
+  <p><strong>Step 3.</strong> Sign the ANProto message</p>
 
   <code>const sig = await a.sign(hash, keypair)</code>
 
@@ -66,7 +66,7 @@ app.get('/try', async (c) => {
   </div>
   <div class="message">
 
-  <p><strong>Step 4.</strong> Open the AProto message</p>
+  <p><strong>Step 4.</strong> Open the ANProto message</p>
 
   <code>const opened = await a.open(msg)</code>  
 
@@ -88,13 +88,13 @@ app.get('/try', async (c) => {
 </body>
 
 <script type='module'>
-import { a } from './a.js'
+import { an } from './an.js'
 
 const key = document.getElementById('key')
 const button = document.getElementById('but')
 
 button.onclick = async () => {
-  key.value = await a.gen()
+  key.value = await an.gen()
 }
 
 const content = document.getElementById('content')
@@ -104,7 +104,7 @@ const sha = document.getElementById('sha256')
 let blobs = []
 
 hashbutton.onclick = async () => {
-  sha.textContent = await a.hash(content.value)
+  sha.textContent = await an.hash(content.value)
   blobs[sha.textContent] = content.value
 }
 
@@ -112,7 +112,7 @@ const siginput = document.getElementById('sig')
 const signbutton = document.getElementById('sign')
 
 signbutton.onclick = async () => {
-  siginput.value = await a.sign(sha.textContent, key.value)
+  siginput.value = await an.sign(sha.textContent, key.value)
 }
 
 const openbutton = document.getElementById('open')
@@ -120,7 +120,7 @@ const openbutton = document.getElementById('open')
 const openen = document.getElementById('openen')
 
 openbutton.onclick = async () => {
-  openen.value = await a.open(siginput.value)
+  openen.value = await an.open(siginput.value)
 }
 
 const msgspan = document.getElementById('msg')

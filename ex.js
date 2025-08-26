@@ -1,10 +1,10 @@
-import { a } from "./a.js";
+import { an } from "./an.js";
 
 const m = "Hello World";
-const h = await a.hash(m);
-const k = await a.gen();
-const s = await a.sign(m, k);
-const o = await a.open(s);
+const h = await an.hash(m);
+const k = await an.gen();
+const s = await an.sign(m, k);
+const o = await an.open(s);
 
 console.log(k);
 console.log(h);

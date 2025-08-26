@@ -3,7 +3,7 @@ export const head = async (title) => {
 <!doctype html>
 <html>
   <head>
-    <title>A Protocol | ${title}</title>
+    <title>ANProto | ${title}</title>
     <link rel='stylesheet' href='./style.css' type='text/css' />
     <meta name='viewport' content='width=device-width initial-scale=1' />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -16,7 +16,7 @@ export const head = async (title) => {
   <body>
     <div id='navbar'>
       <img src='https://wiredove.net/doveorange_sm.png' class='avatar_small' style='vertical-align: middle;'></strong>
-      <strong><span style="color: #fe7a00;">A</span>Proto</strong>
+      <strong><span style="color: #fe7a00;">AN</span>Proto</strong>
     </div>
 `;
 };

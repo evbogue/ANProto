@@ -1,15 +1,15 @@
 import nacl from "./lib/nacl-fast-es.js";
 import { decode, encode } from "./lib/base64.js";
 
-export const a = {};
+export const an = {};
 
-a.gen = async () => {
+an.gen = async () => {
   const g = await nacl.sign.keyPair();
   const k = await encode(g.publicKey) + encode(g.secretKey);
   return k;
 };
 
-a.hash = async (d) => {
+an.hash = async (d) => {
   return encode(
     Array.from(
       new Uint8Array(
@@ -19,7 +19,7 @@ a.hash = async (d) => {
   );
 };
 
-a.sign = async (h, k) => {
+an.sign = async (h, k) => {
   const ts = Date.now();
   const s = encode(
     nacl.sign(new TextEncoder().encode(ts + h), decode(k.substring(44))),
@@ -28,7 +28,7 @@ a.sign = async (h, k) => {
   return k.substring(0, 44) + s;
 };
 
-a.open = async (m) => {
+an.open = async (m) => {
   const o = new TextDecoder().decode(
     nacl.sign.open(decode(m.substring(44)), decode(m.substring(0, 44))),
   );
