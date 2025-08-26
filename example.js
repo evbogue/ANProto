@@ -10,7 +10,9 @@ app.get('/', async (c) => {
     <div id="scroller">
       <div class='message'>
         <h1>ANProto</h1>
+	<p>Try ANProto online:</p>
         <p><a href="./try">Try ANProto</a></p>
+	<p>The Official ANProto Client:
         <p><a href="https://wiredove.net/">Wiredove</a></p>
       </div>
     </div>

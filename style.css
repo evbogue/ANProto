@@ -91,6 +91,7 @@ a {
 
 a:hover {
   color: #8d82fe;
+  text-decoration: underline;
 }
 
 img {width: 95%; margin: 1em;}
@@ -116,7 +117,7 @@ iframe {
   left: 0;
   background-color: rgba(242,242,242,0.5);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #eee;
 }
 
 .message {
@@ -136,19 +137,21 @@ iframe {
 @media (prefers-color-scheme: dark) {
   body { 
     background-color: #181818;
-    color: #ccc;
+    color: #f5f5f5;
   }
-  #navbar {  background-color: rgba(24,24,24,0.2); }
-  .message { background-color: #222; border: 1px solid #1e1e1e;}
-  .message:hover { border: 1px solid #333;}
+  #navbar {  background-color: rgba(24,24,24,0.2); border-bottom: 1px solid orange;}
+  #navbar a { color: orange;}
+  #navbar:hover { border-bottom: 1px solid magenta;}
+  .message { background-color: #222; border: 1px solid #333;}
+  .message:hover { border: 1px solid magenta;}
 
-  textarea, input, iframe { background: #222; color: #f5f5f5; border: 1px solid #222;}
+  textarea, input, iframe { background: #333; color: #f5f5f5; border: 1px solid #222;}
 
   button { color: #ccc; background: #333; border: 1px solid #444;}
   button:hover { background: #222;}
   hr { border: 1px solid #333;}
   pre, code { background: #333; color: #f5f5f5;}
-  a {color: #50afe4;}
+  a {color: orange;}
 }
 
 .content {margin-top: 5px;} 

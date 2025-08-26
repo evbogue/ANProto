@@ -15,8 +15,9 @@ export const head = async (title) => {
   </head>
   <body>
     <div id='navbar'>
-      <img src='https://wiredove.net/doveorange_sm.png' class='avatar_small' style='vertical-align: middle;'></strong>
-      <strong><span style="color: #fe7a00;">AN</span>Proto</strong>
+      <a href='/'><img src='https://wiredove.net/doveorange_sm.png' class='avatar_small' style='vertical-align: middle;'></a>
+      <strong><span style="color: #fe7a00;">AN</span>Proto</strong> 
+      <strong><a href='./try'>Try it</a></strong>
     </div>
 `;
 };
