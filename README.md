@@ -12,7 +12,7 @@ try it at [anproto.com/try](https://anproto.com/try) or use a client such as [wi
 ed25519 keypairs sign timestamp + hash in base64
 
 + ANProto is the spiritual successor to [secure-scuttlebot](https://scuttlebot.io), but without all of the extra stuff that is difficult to maintain. 
-+ANProto is an attempt to argue that [ATProto](https://atprotocom.) is too involved in it's own networking infrastructure to be usefully decentralized. 
++ ANProto is an attempt to argue that [ATProto](https://atprotocom.) is too involved in it's own networking infrastructure to be usefully decentralized. 
 + ANProto operates under the working theory that [Nostr](https://fiatjaf.com/nostr.html) will never reach anyone besides Bitcoiners. 
 
 ### the JavaScript library!
