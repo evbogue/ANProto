@@ -15,6 +15,10 @@ ed25519 keypairs sign timestamp + hash in base64
 + ANProto is an attempt to argue that [ATProto](https://atprotocom.) is too involved in it's own networking infrastructure to be usefully decentralized. 
 + ANProto operates under the working theory that [Nostr](https://fiatjaf.com/nostr.html) will never reach anyone besides Bitcoiners. 
 
+### Bring your own network!
+
+ANProto works over any networking stack. Open the messages from your URL bar! Email them to your friends! Load them on a USB stick an slingshot them over a river! ANProto is non-networked, so you can send and retrieve the messages anyway you want. Try the fetch API or Websockets if you want a good place to start. But maybe dork out trying to send ANProto messages via Bluetooth, LoRa, or sync them via local wifi like you did with Scuttlebot!
+
 ### the JavaScript library!
 
 use Deno or your browser
