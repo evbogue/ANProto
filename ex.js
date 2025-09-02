@@ -3,7 +3,7 @@ import { an } from "./an.js";
 const m = "Hello World";
 const h = await an.hash(m);
 const k = await an.gen();
-const s = await an.sign(m, k);
+const s = await an.sign(h, k);
 const o = await an.open(s);
 
 console.log(k);

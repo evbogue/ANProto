@@ -8,7 +8,7 @@ ed25519 keypairs sign timestamp + hash in base64
 
 [anproto.com](https://anproto.com)
 
-+ [Deno/Browser implementation](https://github.com/evbogue/anproto) [by Evbogue]
++ [JavaScript implementation](https://github.com/evbogue/anproto) [by Evbogue]
 + [Golang implementation](https://github.com/vic/goan) [by Vic]
 
 try it at [anproto.com/try](https://anproto.com/try) or use a client such as [wiredove](https://wiredove.net/)
