@@ -10,7 +10,8 @@ ed25519 keypairs sign timestamp + hash in base64
 
 + [JavaScript implementation](https://github.com/evbogue/anproto) [by Evbogue]
 + [Golang implementation](https://github.com/vic/goan) [by Vic]
-
++ [Rust implementation](https://github.com/vic/anproto-rs/] [by Vic]
+  
 try it at [anproto.com/try](https://anproto.com/try) or use a client such as [wiredove](https://wiredove.net/)
 
 ***
