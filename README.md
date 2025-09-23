@@ -38,7 +38,6 @@ use Deno or your browser
 import { an } from './an.js'
 
 console.log(await an.gen())
-
 // BSY7/er4VJIu08o39NaRAiPY/MAvd7oQhlGCRDABjYU=tQa03kqUWG3VtHZ98++lHFBeQ4JKZwuTH2CjC/K6P8EFJjv96vhUki7Tyjf01pECI9j8wC93uhCGUYJEMAGNhQ==
 
 console.log(await an.hash('Hello World'))
