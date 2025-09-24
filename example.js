@@ -142,6 +142,11 @@ getbutton.onclick = async () => {
   return await c.html(html) 
 })
 
-app.use('*', serveStatic({ root: './' }))
+app.use('*', serveStatic({ 
+  root: './',
+  onFound: (_path, c) => {
+    c.header("Access-Control-Allow-Origin", "*")
+  }
+ }))
 
 export default app
