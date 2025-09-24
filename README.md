@@ -1,4 +1,4 @@
-<img src='https://raw.githubusercontent.com/evbogue/wiredove/master/doveorange_sm.png' width='75px' height='75px' />
+<img src='https://raw.githubusercontent.com/evbogue/wiredove/master/doveorange_sm.png' style='width: 75px; height: 75px;' />
 
 # ANProto
 
