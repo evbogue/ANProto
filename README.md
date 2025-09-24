@@ -1,4 +1,4 @@
-![ANProto Logo](https://raw.githubusercontent.com/evbogue/wiredove/master/doveorange_sm.png)
+<img src='https://raw.githubusercontent.com/evbogue/wiredove/master/doveorange_sm.png' width='75px' height='75px' />
 
 # ANProto
 
