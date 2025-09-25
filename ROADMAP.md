@@ -56,7 +56,7 @@ Random errors that need to get fixed
 - [ ] new posts should show up in the right places
 - [ ] lost posts?
 - [ ] double posts with different hashes?
-- [ ] 
+- [ ] slow page load on mobile
 
 ### React Native App
 
