@@ -15,7 +15,7 @@ ANProto should be implemented in as many programming languages as possible so th
 
 ### A Personal Data Server (apds)
 
-APDS authenticates and stores ANProto messages and blobs
+apds authenticates and stores ANProto messages and blobs
 
 This document only specifies what needs to happen with the JavaScript implementation.
 
@@ -23,6 +23,7 @@ This document only specifies what needs to happen with the JavaScript implementa
 - [x] Compose messages
 - [x] Verify messages
 - [x] Add messages to a DB
+- [x] Query and search the DB
 - [ ] Remove messages from a DB  
 - [ ] Block content from authors or specific messages from being added to a DB
 - [ ] Websocket server (move over from Dovepub)
@@ -50,6 +51,8 @@ User interface
 - [ ] banners on profile pages
 - [ ] notifications
 - [ ] likes/hearts/emojis?
+- [ ] delete specific blobs/posts/users
+- [ ] client side mute
 
 Random errors that need to get fixed
 
