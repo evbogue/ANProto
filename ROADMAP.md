@@ -39,6 +39,7 @@ Networking -- connects Wiredove to remote PDSes
 
 - [x] Trystero
 - [x] Websockets
+- [ ] Does ws reconnect?
 
 User interface
 
