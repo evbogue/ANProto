@@ -57,7 +57,8 @@ User interface
 
 Random errors that need to get fixed
 
-- [ ] new posts should show up in the right places
+- [ ] new posts should show up at top
+- [ ] syncing old messages should not be so overwhelming
 - [ ] lost posts?
 - [ ] double posts with different hashes?
 - [ ] slow page load on mobile
