@@ -1,28 +1,27 @@
 import { Hono } from "jsr:@hono/hono";
-import { serveStatic } from 'jsr:@hono/hono/deno'
-import { marked } from 'https://esm.sh/gh/evbogue/bog5@de70376265/lib/marked.esm.js'
+import { serveStatic } from "jsr:@hono/hono/deno";
+import { marked } from "https://esm.sh/gh/evbogue/bog5@de70376265/lib/marked.esm.js";
 
 import { foot, head } from "./template.js";
 
 const app = new Hono();
 
-const readme = await Deno.readTextFile('./README.md')
+const readme = await Deno.readTextFile("./README.md");
 
-app.get('/', async (c) => {
+app.get("/", async (c) => {
   const content = `
     <div id="scroller">
       <div class='message'>
         ${await marked(readme)} 
       </div>
     </div>
-  `
+  `;
 
-  const html = await head('Index') + content + await foot()
-  return await c.html(html)  
-})
+  const html = await head("Index") + content + await foot();
+  return await c.html(html);
+});
 
-app.get('/try', async (c) => {
-
+app.get("/try", async (c) => {
   const body = `<body>
   <div id='scroller'>
   <div class='message'>
@@ -136,17 +135,20 @@ getbutton.onclick = async () => {
   }
 }
 
-</script>`
+</script>`;
 
-  const html = await head('Try it') + body + await foot()
-  return await c.html(html) 
-})
+  const html = await head("Try it") + body + await foot();
+  return await c.html(html);
+});
 
-app.use('*', serveStatic({ 
-  root: './',
-  onFound: (_path, c) => {
-    c.header("Access-Control-Allow-Origin", "*")
-  }
- }))
+app.use(
+  "*",
+  serveStatic({
+    root: "./",
+    onFound: (_path, c) => {
+      c.header("Access-Control-Allow-Origin", "*");
+    },
+  }),
+);
 
-export default app
+export default app;
