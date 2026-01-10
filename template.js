@@ -1,9 +1,10 @@
-export const head = async (title) => {
+export const head = async (title, navLabel) => {
+  const navText = navLabel ?? `<span style="color: #fe7a00;">AN</span>Proto`;
   return await `
 <!doctype html>
 <html>
   <head>
-    <title>ANProto | ${title}</title>
+    <title>${title}</title>
     <link rel='stylesheet' href='./style.css' type='text/css' />
     <meta name='viewport' content='width=device-width initial-scale=1' />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -16,8 +17,7 @@ export const head = async (title) => {
   <body>
     <div id='navbar'>
       <a href='/'><img src='https://wiredove.net/doveorange_sm.png' class='avatar_small' style='vertical-align: middle;'></a>
-      <strong><span style="color: #fe7a00;">AN</span>Proto</strong> 
-      <strong><a href='./try'>Try it</a></strong>
+      <strong>${navText}</strong> 
     </div>
 `;
 };
