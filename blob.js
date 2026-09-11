@@ -107,6 +107,47 @@ export class MemoryBlobStore {
   }
 }
 
+export class HttpBlobStore {
+  constructor(baseUrl, { fetchImpl = fetch } = {}) {
+    if (!baseUrl) throw new TypeError("HttpBlobStore requires a base URL");
+    this.baseUrl = String(baseUrl).replace(/\/$/, "");
+    this.fetch = fetchImpl;
+  }
+
+  #url(id) {
+    return this.baseUrl + "/" + encodeURIComponent(id);
+  }
+
+  async put(id, bytes) {
+    const response = await this.fetch(this.#url(id), {
+      method: "PUT",
+      headers: { "content-type": "application/octet-stream" },
+      body: bytes,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} storing ${id}`);
+    }
+  }
+
+  async get(id) {
+    const response = await this.fetch(this.#url(id));
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} fetching ${id}`);
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  }
+
+  async has(id) {
+    const response = await this.fetch(this.#url(id), { method: "HEAD" });
+    if (response.status === 404) return false;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} checking ${id}`);
+    }
+    return true;
+  }
+}
+
 export class IndexedDBBlobStore {
   #db;
 
@@ -268,7 +309,8 @@ export async function downloadBlob(
     throw new TypeError("concurrency must be a positive integer");
   }
 
-  const root = await fetchVerified(id, sources, random);
+  const rootResult = await fetchVerified(id, sources, random);
+  const root = rootResult.bytes;
 
   if (store?.put) await store.put(id, root);
 
@@ -293,6 +335,7 @@ export async function downloadBlob(
 
       const chunk = manifest.chunks[index];
       let bytes = null;
+      let source = "cache";
 
       if (store?.get) {
         const cached = await store.get(chunk.id);
@@ -306,7 +349,9 @@ export async function downloadBlob(
       }
 
       if (!bytes) {
-        bytes = await fetchVerified(chunk.id, sources, random);
+        const fetched = await fetchVerified(chunk.id, sources, random);
+        bytes = fetched.bytes;
+        source = fetched.source;
         if (bytes.length !== chunk.size) {
           throw new Error(`blob chunk has wrong size: ${chunk.id}`);
         }
@@ -320,6 +365,7 @@ export async function downloadBlob(
           total: manifest.chunks.length,
           id: chunk.id,
           size: chunk.size,
+          source,
         });
       }
     }
@@ -345,6 +391,86 @@ export async function downloadBlob(
   return output;
 }
 
+/**
+ * Return a browser/server ReadableStream of verified bytes.
+ *
+ * Chunked blobs begin yielding data as soon as each ordered chunk verifies,
+ * so callers can pipe the stream to a file, Response, or MediaSource adapter.
+ */
+export function streamBlob(
+  id,
+  sources,
+  {
+    store = null,
+    random = Math.random,
+    onChunk = null,
+  } = {},
+) {
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const rootResult = await fetchVerified(id, sources, random);
+        const root = rootResult.bytes;
+        if (store?.put) await store.put(id, root);
+
+        if (isRaw(id)) {
+          controller.enqueue(root);
+          controller.close();
+          return;
+        }
+
+        if (!isChunked(id)) throw new TypeError("invalid ANProto blob id");
+
+        const manifest = JSON.parse(decoder.decode(root));
+        validateManifest(manifest);
+
+        for (let index = 0; index < manifest.chunks.length; index++) {
+          const chunk = manifest.chunks[index];
+          let bytes = null;
+          let source = "cache";
+
+          if (store?.get) {
+            const cached = await store.get(chunk.id);
+            if (
+              cached &&
+              cached.length === chunk.size &&
+              await verifyRaw(chunk.id, cached)
+            ) {
+              bytes = cached;
+            }
+          }
+
+          if (!bytes) {
+            const fetched = await fetchVerified(chunk.id, sources, random);
+            bytes = fetched.bytes;
+            source = fetched.source;
+            if (bytes.length !== chunk.size) {
+              throw new Error(`blob chunk has wrong size: ${chunk.id}`);
+            }
+            if (store?.put) await store.put(chunk.id, bytes);
+          }
+
+          if (onChunk) {
+            await onChunk({
+              index,
+              total: manifest.chunks.length,
+              id: chunk.id,
+              size: chunk.size,
+              source,
+            });
+          }
+
+          controller.enqueue(bytes);
+        }
+
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+}
+
 async function fetchVerified(id, sources, random) {
   const shuffled = [...sources];
 
@@ -366,13 +492,13 @@ async function fetchVerified(id, sources, random) {
       const normalized = await toBytes(bytes);
 
       if (isRaw(id)) {
-        if (await verifyRaw(id, normalized)) return normalized;
+        if (await verifyRaw(id, normalized)) return { bytes: normalized, source: sourceName(source) };
         failures.push("corrupt");
         continue;
       }
 
       if (isChunked(id)) {
-        if (await digest(normalized) === expectedHash(id)) return normalized;
+        if (await digest(normalized) === expectedHash(id)) return { bytes: normalized, source: sourceName(source) };
         failures.push("corrupt");
         continue;
       }
@@ -386,6 +512,12 @@ async function fetchVerified(id, sources, random) {
   throw new Error(
     `could not fetch verified blob ${id} from any source: ${failures.join(", ")}`,
   );
+}
+
+function sourceName(source) {
+  if (typeof source === "string") return source;
+  if (typeof source === "function") return source.name || "function";
+  return source?.name || source?.constructor?.name || "store";
 }
 
 async function readFromSource(source, id) {
