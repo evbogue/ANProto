@@ -24,6 +24,14 @@ app.get("/", async (c) => {
       <button id="stopVideo" disabled>Stop video</button>
 
       <p><small>Recording requires HTTPS (or localhost) and browser permission.</small></p>
+
+      <h3>Network demos</h3>
+      <p>After adding media, each result includes:</p>
+      <ul>
+        <li><strong>HTTP round trip</strong> — upload/download through the server blob adapter.</li>
+        <li><strong>Multi-peer download</strong> — distribute pieces across three peers and reassemble them.</li>
+        <li><strong>Stream from peers</strong> — feed verified chunks to playback as they arrive when the browser supports MediaSource for that format.</li>
+      </ul>
     </div>
 
     <div id="results"></div>
