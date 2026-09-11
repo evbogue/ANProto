@@ -197,3 +197,53 @@ They are better for ANProto's specific goal when we want:
 The design rule is:
 
 > **ANProto defines what bytes are. The application decides where they live and how they move.**
+
+
+## HTTP adapter
+
+`HttpBlobStore` works anywhere `fetch` works: browsers, Deno, and modern server runtimes.
+
+```js
+const remote = new HttpBlobStore("/blobs");
+const id = await putBlob(file, remote);
+const bytes = await getBlob(id, remote);
+```
+
+The demo server includes a simple `/blobs/:id` endpoint so the deployed media page can prove the HTTP path end-to-end.
+
+## Streaming
+
+`streamBlob()` returns a standard `ReadableStream`.
+
+```js
+const stream = streamBlob(blobId, [peerA, peerB, peerC], {
+  onChunk: ({ index, total, source }) => {
+    console.log(index + 1, total, source);
+  },
+});
+```
+
+Each chunk is verified before it is emitted.
+
+In the browser demo, verified media chunks are appended to `MediaSource` when the browser supports that MIME type. If it does not, the demo falls back to verified full-blob playback.
+
+## Browser/server compatibility
+
+The core `blob.js` module avoids Node-, filesystem-, and Deno-only APIs.
+
+Core primitives use Web Platform APIs:
+
+- `crypto.subtle`
+- `Uint8Array`
+- `TextEncoder` / `TextDecoder`
+- `ReadableStream`
+- `fetch`
+- `Blob`
+
+Storage adapters are optional:
+
+- `MemoryBlobStore` — browser + server
+- `HttpBlobStore` — browser + server
+- `IndexedDBBlobStore` — browser only
+
+Camera/microphone recording and MediaSource playback are demo/client features, not protocol dependencies.
