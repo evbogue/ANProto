@@ -4,6 +4,7 @@ import { marked } from "https://esm.sh/gh/evbogue/bog5@de70376265/lib/marked.esm
 
 import { foot, head } from "./template.js";
 import tryApp from "./try_app.js";
+import mediaApp from "./media_app.js";
 
 const app = new Hono();
 
@@ -13,7 +14,7 @@ app.get("/", async (c) => {
   const content = `
     <div id="scroller">
       <div class='message'>
-        ${await marked(readme)} 
+        ${await marked(readme)}
       </div>
     </div>
   `;
@@ -23,6 +24,7 @@ app.get("/", async (c) => {
 });
 
 app.route("/try", tryApp);
+app.route("/media", mediaApp);
 
 app.use(
   "*",
