@@ -1,6 +1,7 @@
 import {
   CHUNK_SIZE,
   MemoryBlobStore,
+  downloadBlob,
   getBlob,
   mediaArtifact,
   putBlob,
@@ -88,4 +89,81 @@ Deno.test("media artifacts point to blobs instead of embedding media", async () 
   assert(artifact.type === "audio");
   assert(artifact.blob === id);
   assert(artifact.duration === 4.2);
+});
+
+
+Deno.test("multi-source downloader assembles chunks from different stores", async () => {
+  const origin = new MemoryBlobStore();
+  const input = new Uint8Array(CHUNK_SIZE * 2 + 333);
+  for (let i = 0; i < input.length; i++) input[i] = (i * 7) % 251;
+
+  const id = await putBlob(input, origin);
+  const manifestBytes = await origin.get(id);
+  const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
+
+  const a = new MemoryBlobStore();
+  const b = new MemoryBlobStore();
+  const c = new MemoryBlobStore();
+
+  // Only one source has the manifest.
+  await a.put(id, manifestBytes);
+
+  // Spread the pieces across three different sources.
+  for (let i = 0; i < manifest.chunks.length; i++) {
+    const chunk = manifest.chunks[i];
+    const bytes = await origin.get(chunk.id);
+    [a, b, c][i % 3].put(chunk.id, bytes);
+  }
+
+  const progress = [];
+  const output = await downloadBlob(id, [a, b, c], {
+    concurrency: 3,
+    random: () => 0.42,
+    onChunk: (event) => progress.push(event.index),
+  });
+
+  assert(equalBytes(output, input));
+  assert(progress.length === manifest.chunks.length);
+});
+
+Deno.test("multi-source downloader falls back from corrupt copies", async () => {
+  const origin = new MemoryBlobStore();
+  const input = new Uint8Array(CHUNK_SIZE + 77).fill(23);
+  const id = await putBlob(input, origin);
+  const manifestBytes = await origin.get(id);
+  const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
+
+  const corrupt = new MemoryBlobStore();
+  const valid = new MemoryBlobStore();
+
+  await corrupt.put(id, manifestBytes);
+  await valid.put(id, manifestBytes);
+
+  for (const chunk of manifest.chunks) {
+    await corrupt.put(chunk.id, new Uint8Array(chunk.size).fill(99));
+    await valid.put(chunk.id, await origin.get(chunk.id));
+  }
+
+  const output = await downloadBlob(id, [corrupt, valid], {
+    random: () => 0.999,
+  });
+
+  assert(equalBytes(output, input));
+});
+
+Deno.test("multi-source downloader caches pieces locally", async () => {
+  const origin = new MemoryBlobStore();
+  const cache = new MemoryBlobStore();
+  const input = new Uint8Array(CHUNK_SIZE + 11).fill(5);
+  const id = await putBlob(input, origin);
+
+  const output = await downloadBlob(id, [origin], { store: cache });
+
+  assert(equalBytes(output, input));
+  assert(await cache.has(id));
+
+  const manifest = JSON.parse(new TextDecoder().decode(await cache.get(id)));
+  for (const chunk of manifest.chunks) {
+    assert(await cache.has(chunk.id));
+  }
 });
