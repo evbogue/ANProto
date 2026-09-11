@@ -241,6 +241,170 @@ export async function getBlob(id, store) {
 }
 
 /**
+ * Fetch a blob from multiple independent sources.
+ *
+ * Each source may be:
+ * - an object implementing async get(id)
+ * - an async function (id) => bytes | null
+ * - an HTTP base URL serving blobs at <base>/<encoded blob id>
+ *
+ * For chunked blobs, each chunk gets an independently shuffled source order.
+ * Failed, missing, or corrupt copies are skipped automatically.
+ */
+export async function downloadBlob(
+  id,
+  sources,
+  {
+    concurrency = 4,
+    store = null,
+    random = Math.random,
+    onChunk = null,
+  } = {},
+) {
+  if (!Array.isArray(sources) || sources.length === 0) {
+    throw new TypeError("downloadBlob requires at least one source");
+  }
+  if (!Number.isInteger(concurrency) || concurrency < 1) {
+    throw new TypeError("concurrency must be a positive integer");
+  }
+
+  const root = await fetchVerified(id, sources, random);
+
+  if (store?.put) await store.put(id, root);
+
+  if (isRaw(id)) return root;
+  if (!isChunked(id)) throw new TypeError("invalid ANProto blob id");
+
+  let manifest;
+  try {
+    manifest = JSON.parse(decoder.decode(root));
+  } catch {
+    throw new Error("invalid blob manifest");
+  }
+  validateManifest(manifest);
+
+  const parts = new Array(manifest.chunks.length);
+  let cursor = 0;
+
+  async function worker() {
+    while (true) {
+      const index = cursor++;
+      if (index >= manifest.chunks.length) return;
+
+      const chunk = manifest.chunks[index];
+      let bytes = null;
+
+      if (store?.get) {
+        const cached = await store.get(chunk.id);
+        if (
+          cached &&
+          cached.length === chunk.size &&
+          await verifyRaw(chunk.id, cached)
+        ) {
+          bytes = cached;
+        }
+      }
+
+      if (!bytes) {
+        bytes = await fetchVerified(chunk.id, sources, random);
+        if (bytes.length !== chunk.size) {
+          throw new Error(`blob chunk has wrong size: ${chunk.id}`);
+        }
+        if (store?.put) await store.put(chunk.id, bytes);
+      }
+
+      parts[index] = bytes;
+      if (onChunk) {
+        await onChunk({
+          index,
+          total: manifest.chunks.length,
+          id: chunk.id,
+          size: chunk.size,
+        });
+      }
+    }
+  }
+
+  const workers = Array.from(
+    { length: Math.min(concurrency, manifest.chunks.length) },
+    () => worker(),
+  );
+  await Promise.all(workers);
+
+  const output = new Uint8Array(manifest.size);
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
+  }
+
+  if (!(await verifyBlob(id, output))) {
+    throw new Error(`downloaded blob failed final verification: ${id}`);
+  }
+
+  return output;
+}
+
+async function fetchVerified(id, sources, random) {
+  const shuffled = [...sources];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const failures = [];
+
+  for (const source of shuffled) {
+    try {
+      const bytes = await readFromSource(source, id);
+      if (!bytes) {
+        failures.push("missing");
+        continue;
+      }
+
+      const normalized = await toBytes(bytes);
+
+      if (isRaw(id)) {
+        if (await verifyRaw(id, normalized)) return normalized;
+        failures.push("corrupt");
+        continue;
+      }
+
+      if (isChunked(id)) {
+        if (await digest(normalized) === expectedHash(id)) return normalized;
+        failures.push("corrupt");
+        continue;
+      }
+
+      throw new TypeError("invalid ANProto blob id");
+    } catch (error) {
+      failures.push(error?.message || String(error));
+    }
+  }
+
+  throw new Error(
+    `could not fetch verified blob ${id} from any source: ${failures.join(", ")}`,
+  );
+}
+
+async function readFromSource(source, id) {
+  if (typeof source === "function") return await source(id);
+
+  if (typeof source === "string") {
+    const url = source.replace(/\/$/, "") + "/" + encodeURIComponent(id);
+    const response = await fetch(url);
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`HTTP ${response.status} from ${url}`);
+    return new Uint8Array(await response.arrayBuffer());
+  }
+
+  if (source?.get) return await source.get(id);
+
+  throw new TypeError("blob source must be a get(id) store, function, or base URL");
+}
+
+/**
  * Verify bytes against an ANProto blob id without trusting the transport.
  */
 export async function verifyBlob(id, input) {
