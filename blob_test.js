@@ -1,10 +1,12 @@
 import {
   CHUNK_SIZE,
+  HttpBlobStore,
   MemoryBlobStore,
   downloadBlob,
   getBlob,
   mediaArtifact,
   putBlob,
+  streamBlob,
   verifyBlob,
 } from "./blob.js";
 
@@ -166,4 +168,58 @@ Deno.test("multi-source downloader caches pieces locally", async () => {
   for (const chunk of manifest.chunks) {
     assert(await cache.has(chunk.id));
   }
+});
+
+
+Deno.test("HttpBlobStore works with browser/server fetch semantics", async () => {
+  const backing = new Map();
+
+  const fakeFetch = async (url, init = {}) => {
+    const method = init.method || "GET";
+    const id = decodeURIComponent(new URL(url).pathname.split("/").pop());
+
+    if (method === "PUT") {
+      backing.set(id, new Uint8Array(await new Response(init.body).arrayBuffer()));
+      return new Response(null, { status: 204 });
+    }
+
+    if (method === "HEAD") {
+      return new Response(null, { status: backing.has(id) ? 204 : 404 });
+    }
+
+    const bytes = backing.get(id);
+    return bytes
+      ? new Response(bytes, { status: 200 })
+      : new Response(null, { status: 404 });
+  };
+
+  const http = new HttpBlobStore("https://example.test/blobs", {
+    fetchImpl: fakeFetch,
+  });
+
+  const input = new Uint8Array(CHUNK_SIZE + 17).fill(31);
+  const id = await putBlob(input, http);
+  const output = await getBlob(id, http);
+
+  assert(equalBytes(output, input));
+  assert(await http.has(id));
+});
+
+Deno.test("streamBlob yields verified ordered bytes", async () => {
+  const origin = new MemoryBlobStore();
+  const input = new Uint8Array(CHUNK_SIZE * 2 + 29);
+  for (let i = 0; i < input.length; i++) input[i] = i % 199;
+
+  const id = await putBlob(input, origin);
+  const seen = [];
+
+  const stream = streamBlob(id, [origin], {
+    onChunk: ({ index, source }) => seen.push({ index, source }),
+  });
+
+  const output = new Uint8Array(await new Response(stream).arrayBuffer());
+
+  assert(equalBytes(output, input));
+  assert(seen.length === 3);
+  assert(seen.every((item, index) => item.index === index));
 });
