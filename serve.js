@@ -5,6 +5,7 @@ import { marked } from "https://esm.sh/gh/evbogue/bog5@de70376265/lib/marked.esm
 import { foot, head } from "./template.js";
 import tryApp from "./try_app.js";
 import mediaApp from "./media_app.js";
+import blobHttpApp from "./blob_http_app.js";
 
 const app = new Hono();
 
@@ -25,6 +26,7 @@ app.get("/", async (c) => {
 
 app.route("/try", tryApp);
 app.route("/media", mediaApp);
+app.route("/blobs", blobHttpApp);
 
 app.use(
   "*",
