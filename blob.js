@@ -1,0 +1,254 @@
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+export const CHUNK_SIZE = 1024 * 1024;
+const RAW_PREFIX = "anblob:v1:raw:sha256:";
+const CHUNKED_PREFIX = "anblob:v1:chunked:sha256:";
+
+async function toBytes(input) {
+  if (input instanceof Uint8Array) return input;
+  if (input instanceof ArrayBuffer) return new Uint8Array(input);
+  if (typeof Blob !== "undefined" && input instanceof Blob) {
+    return new Uint8Array(await input.arrayBuffer());
+  }
+  if (typeof input === "string") return encoder.encode(input);
+  throw new TypeError("blob input must be a string, Blob, ArrayBuffer, or Uint8Array");
+}
+
+function base64url(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+async function sha256(bytes) {
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+}
+
+async function digest(bytes) {
+  return base64url(await sha256(bytes));
+}
+
+function rawId(hash) {
+  return RAW_PREFIX + hash;
+}
+
+function chunkedId(hash) {
+  return CHUNKED_PREFIX + hash;
+}
+
+function isRaw(id) {
+  return id.startsWith(RAW_PREFIX);
+}
+
+function isChunked(id) {
+  return id.startsWith(CHUNKED_PREFIX);
+}
+
+function expectedHash(id) {
+  if (isRaw(id)) return id.slice(RAW_PREFIX.length);
+  if (isChunked(id)) return id.slice(CHUNKED_PREFIX.length);
+  throw new TypeError("invalid ANProto blob id");
+}
+
+async function rawRef(bytes) {
+  return rawId(await digest(bytes));
+}
+
+async function makeManifest(bytes) {
+  const chunks = [];
+
+  for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+    const chunk = bytes.slice(offset, Math.min(offset + CHUNK_SIZE, bytes.length));
+    chunks.push({
+      id: await rawRef(chunk),
+      size: chunk.length,
+    });
+  }
+
+  return {
+    v: 1,
+    type: "anproto/blob-manifest",
+    size: bytes.length,
+    chunkSize: CHUNK_SIZE,
+    chunks,
+  };
+}
+
+function manifestBytes(manifest) {
+  // Property insertion order above is the v1 canonical representation.
+  return encoder.encode(JSON.stringify(manifest));
+}
+
+async function refForBytes(bytes) {
+  if (bytes.length <= CHUNK_SIZE) return await rawRef(bytes);
+  const manifest = await makeManifest(bytes);
+  return chunkedId(await digest(manifestBytes(manifest)));
+}
+
+export class MemoryBlobStore {
+  #records = new Map();
+
+  async put(id, bytes) {
+    this.#records.set(id, new Uint8Array(bytes));
+  }
+
+  async get(id) {
+    const bytes = this.#records.get(id);
+    return bytes ? new Uint8Array(bytes) : null;
+  }
+
+  async has(id) {
+    return this.#records.has(id);
+  }
+
+  get size() {
+    return this.#records.size;
+  }
+}
+
+/**
+ * Store bytes and return their portable, content-addressed ANProto blob id.
+ *
+ * Small values are stored directly. Values larger than 1 MiB are split into
+ * fixed 1 MiB chunks and represented by a deterministic manifest.
+ */
+export async function putBlob(input, store) {
+  if (!store?.put) throw new TypeError("putBlob requires a blob store");
+
+  const bytes = await toBytes(input);
+
+  if (bytes.length <= CHUNK_SIZE) {
+    const id = await rawRef(bytes);
+    if (!(await store.has?.(id))) await store.put(id, bytes);
+    return id;
+  }
+
+  const manifest = await makeManifest(bytes);
+
+  for (let i = 0, offset = 0; i < manifest.chunks.length; i++, offset += CHUNK_SIZE) {
+    const chunkMeta = manifest.chunks[i];
+    if (await store.has?.(chunkMeta.id)) continue;
+    const chunk = bytes.slice(offset, offset + chunkMeta.size);
+    await store.put(chunkMeta.id, chunk);
+  }
+
+  const encoded = manifestBytes(manifest);
+  const id = chunkedId(await digest(encoded));
+  if (!(await store.has?.(id))) await store.put(id, encoded);
+  return id;
+}
+
+/**
+ * Retrieve and verify a blob from any store implementing get(id).
+ */
+export async function getBlob(id, store) {
+  if (!store?.get) throw new TypeError("getBlob requires a blob store");
+
+  const root = await store.get(id);
+  if (!root) throw new Error(`blob not found: ${id}`);
+
+  if (isRaw(id)) {
+    if (!(await verifyRaw(id, root))) throw new Error(`blob failed verification: ${id}`);
+    return root;
+  }
+
+  if (!isChunked(id)) throw new TypeError("invalid ANProto blob id");
+
+  if (await digest(root) !== expectedHash(id)) {
+    throw new Error(`manifest failed verification: ${id}`);
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(decoder.decode(root));
+  } catch {
+    throw new Error("invalid blob manifest");
+  }
+
+  validateManifest(manifest);
+
+  const parts = [];
+  let total = 0;
+
+  for (const chunk of manifest.chunks) {
+    const bytes = await store.get(chunk.id);
+    if (!bytes) throw new Error(`blob chunk not found: ${chunk.id}`);
+    if (bytes.length !== chunk.size || !(await verifyRaw(chunk.id, bytes))) {
+      throw new Error(`blob chunk failed verification: ${chunk.id}`);
+    }
+    parts.push(bytes);
+    total += bytes.length;
+  }
+
+  if (total !== manifest.size) throw new Error("blob size does not match manifest");
+
+  const output = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
+  }
+
+  return output;
+}
+
+/**
+ * Verify bytes against an ANProto blob id without trusting the transport.
+ */
+export async function verifyBlob(id, input) {
+  const bytes = await toBytes(input);
+  return (await refForBytes(bytes)) === id;
+}
+
+async function verifyRaw(id, bytes) {
+  return isRaw(id) && rawId(await digest(bytes)) === id;
+}
+
+function validateManifest(manifest) {
+  if (
+    manifest?.v !== 1 ||
+    manifest?.type !== "anproto/blob-manifest" ||
+    manifest?.chunkSize !== CHUNK_SIZE ||
+    !Number.isSafeInteger(manifest?.size) ||
+    manifest.size < 0 ||
+    !Array.isArray(manifest?.chunks)
+  ) {
+    throw new Error("invalid blob manifest");
+  }
+
+  let size = 0;
+  for (const chunk of manifest.chunks) {
+    if (
+      !chunk ||
+      !isRaw(chunk.id) ||
+      !Number.isSafeInteger(chunk.size) ||
+      chunk.size < 1 ||
+      chunk.size > CHUNK_SIZE
+    ) {
+      throw new Error("invalid blob chunk");
+    }
+    size += chunk.size;
+  }
+
+  if (size !== manifest.size) throw new Error("invalid blob manifest size");
+}
+
+/**
+ * Useful when building an ANProto artifact that points at media.
+ */
+export function mediaArtifact({ blob, mime, name = "", kind, ...extra }) {
+  if (!blob || (!isRaw(blob) && !isChunked(blob))) {
+    throw new TypeError("mediaArtifact requires an ANProto blob id");
+  }
+
+  const inferred = kind || (mime?.startsWith("audio/") ? "audio" : mime?.startsWith("video/") ? "video" : "file");
+
+  return {
+    type: inferred,
+    blob,
+    ...(mime ? { mime } : {}),
+    ...(name ? { name } : {}),
+    ...extra,
+  };
+}
