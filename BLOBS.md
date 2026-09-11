@@ -101,3 +101,63 @@ A blob store can be backed by:
 - another peer
 
 The invariant is only: bytes returned for an ID must verify against that ID.
+
+
+## How this compares
+
+ANProto blobs borrow the best idea from both SSB blobs and IPFS: **content addressing**. The main difference is that ANProto keeps the blob layer deliberately smaller and transport-agnostic.
+
+| | ANProto blobs | SSB blobs | IPFS |
+|---|---|---|---|
+| Content addressed | Yes | Yes | Yes |
+| Large-file chunking | Yes, fixed 1 MiB | Not in the blob ID itself | Yes |
+| Per-chunk verification | Yes | No | Yes |
+| Built-in network | No | SSB gossip/wants | IPFS networking |
+| Requires a daemon/node | No | Usually an SSB stack | Usually an IPFS implementation |
+| File/directory DAGs | No | No | Yes |
+| Multiple codecs/hash schemes | No, v1 is intentionally fixed | No | Yes |
+| Same bytes → deterministic ID | Yes | Yes for a blob | Only when CID parameters match |
+| Designed to plug into other transports | Yes | Mostly SSB | Mostly IPFS ecosystem |
+
+### Compared with SSB blobs
+
+SSB's blob store is simple and proven: blobs are identified by hash, and peers gossip what they want. The `ssb-blobs` protocol also has useful replication ideas such as wants, sympathetic wants, and push. What ANProto changes is the boundary: **blob identity is independent from replication**.
+
+That means an ANProto blob can be stored or moved over HTTP, IndexedDB, SSB, IPFS, Yggdrasil, local disk, or something we have not invented yet.
+
+ANProto also chunks large files into independently verified pieces. That makes large audio/video files easier to resume, stream, deduplicate, and verify incrementally than treating the whole file as one monolithic SSB blob.
+
+Where SSB is stronger today: it already has a working peer-to-peer blob replication protocol. ANProto v1 does not try to replace that; an SSB blob store could simply be one backend.
+
+### Compared with IPFS
+
+IPFS is much more powerful. It provides CIDs, multiple codecs, Merkle DAGs, UnixFS files/directories, rich networking, and a mature ecosystem.
+
+ANProto blobs intentionally do less.
+
+For v1, the format fixes:
+
+- SHA-256
+- base64url IDs
+- 1 MiB chunks
+- one deterministic manifest shape
+
+That gives ANProto a useful property: **two implementations can produce the same blob ID from the same bytes without negotiating a CID profile, DAG layout, codec, or chunking strategy.**
+
+IPFS can represent far more complex data structures and optimize different workloads. ANProto prefers one boring representation that is easy to implement in a browser, Deno, a phone app, or a tiny client.
+
+### Why use ANProto blobs?
+
+Not because they are universally better than IPFS or SSB.
+
+They are better for ANProto's specific goal when we want:
+
+1. a tiny content-addressed primitive,
+2. deterministic IDs across implementations,
+3. verified chunked media,
+4. no required network stack, and
+5. the freedom to use SSB, IPFS, HTTP, or anything else underneath.
+
+The design rule is:
+
+> **ANProto defines what bytes are. The application decides where they live and how they move.**
