@@ -107,6 +107,53 @@ export class MemoryBlobStore {
   }
 }
 
+export class IndexedDBBlobStore {
+  #db;
+
+  constructor(name = "anproto-blobs") {
+    if (typeof indexedDB === "undefined") {
+      throw new Error("IndexedDB is not available in this environment");
+    }
+
+    this.#db = new Promise((resolve, reject) => {
+      const request = indexedDB.open(name, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("blobs")) {
+          request.result.createObjectStore("blobs");
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async #request(mode, action) {
+    const db = await this.#db;
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction("blobs", mode);
+      const store = tx.objectStore("blobs");
+      const request = action(store);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async put(id, bytes) {
+    const copy = new Uint8Array(bytes);
+    await this.#request("readwrite", (store) => store.put(copy, id));
+  }
+
+  async get(id) {
+    const value = await this.#request("readonly", (store) => store.get(id));
+    return value ? new Uint8Array(value) : null;
+  }
+
+  async has(id) {
+    const key = await this.#request("readonly", (store) => store.getKey(id));
+    return key !== undefined;
+  }
+}
+
 /**
  * Store bytes and return their portable, content-addressed ANProto blob id.
  *
