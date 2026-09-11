@@ -1,4 +1,5 @@
 import {
+  IndexedDBBlobStore,
   MemoryBlobStore,
   getBlob,
   mediaArtifact,
@@ -6,7 +7,9 @@ import {
   verifyBlob,
 } from "./blob.js";
 
-const store = new MemoryBlobStore();
+const store = typeof indexedDB === "undefined"
+  ? new MemoryBlobStore()
+  : new IndexedDBBlobStore("anproto-media-demo");
 const results = document.getElementById("results");
 
 const esc = (value) => String(value)
