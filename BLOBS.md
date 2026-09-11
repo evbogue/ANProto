@@ -86,6 +86,42 @@ The demo supports:
 
 Camera/microphone access requires HTTPS or localhost.
 
+
+
+## Multi-source downloads
+
+Large blobs can be assembled BitTorrent-style from different places.
+
+```js
+import { downloadBlob } from "./blob.js";
+
+const bytes = await downloadBlob(blobId, [
+  localStore,
+  "https://peer-one.example/blobs",
+  "https://peer-two.example/blobs",
+], {
+  concurrency: 6,
+  store: localCache,
+  onChunk: ({ index, total }) => {
+    console.log(`piece ${index + 1}/${total}`);
+  },
+});
+```
+
+For every chunk, the downloader:
+
+1. shuffles the source order,
+2. tries sources until one returns valid bytes,
+3. verifies the chunk hash,
+4. falls back if a source is missing or corrupt,
+5. downloads several chunks in parallel,
+6. optionally caches verified pieces locally,
+7. verifies the final reconstructed blob.
+
+Sources can be blob stores, async functions, or HTTP base URLs.
+
+This means one video can be reconstructed from pieces held by several different peers without trusting any of them.
+
 ## Storage and transport
 
 The v1 module deliberately does **not** choose a network.
