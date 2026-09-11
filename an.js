@@ -1,7 +1,10 @@
 import nacl from "./lib/nacl-fast-es.js";
 import { decode, encode } from "./lib/base64.js";
+import * as blob from "./blob.js";
 
 export const an = {};
+
+an.blob = blob;
 
 an.gen = async () => {
   const g = await nacl.sign.keyPair();
