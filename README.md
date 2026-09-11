@@ -15,7 +15,7 @@ ed25519 keypairs sign timestamp + hash in base64
 + [Rust implementation](https://github.com/vic/anproto-rs/) [by Vic]
 + [Python implementation](https://github.com/macauleyjustin/ANproto-Python) [by Justin]
   
-try it at [anproto.com/try](https://anproto.com/try) or use a client such as [wiredove](https://wiredove.net/)
+try it at [anproto.com/try](https://anproto.com/try), test audio/video blobs at **/media**, or use a client such as [wiredove](https://wiredove.net/)
 
 ***
 
@@ -53,6 +53,23 @@ console.log(await an.open('BSY7/er4VJIu08o39NaRAiPY/MAvd7oQhlGCRDABjYU=yVpD8i7d3
 
 //1755197841319pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=
 ```
+
+---
+
+### Content-addressed blobs
+
+ANProto artifacts can point at verified files without embedding the file itself.
+
+```js
+const store = new an.blob.MemoryBlobStore()
+const id = await an.blob.putBlob(file, store)
+const bytes = await an.blob.getBlob(id, store)
+console.log(await an.blob.verifyBlob(id, bytes)) // true
+```
+
+Small blobs are SHA-256 addressed directly. Files larger than 1 MiB are split into deterministic 1 MiB chunks with a verified manifest.
+
+See [BLOBS.md](./BLOBS.md) for the format, tests, storage interface, and phone audio/video demo.
 
 ---
 
