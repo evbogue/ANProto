@@ -191,7 +191,7 @@ iframe {
 .unstyled { color: #ccc;}
 .hljs { padding: 10px; border-radius: 5px; background: #555; color: #f2f2f2;} 
 
-.nav-portfolio { float: right; margin-right: 1em; }
+.site-nav { float: right; display: flex; gap: 1em; margin-right: 1em; font-size: .9em; }
 .portfolio-label { color: #777; font-family: "Roboto Mono", monospace; font-size: .72em; }
 .portfolio-intro h1 { font-size: 2em; line-height: 1.05; }
 .lineage-map { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr; gap: 5px; align-items: center; margin-top: 12px; }
@@ -217,4 +217,5 @@ iframe {
 @media (max-width: 580px) {
   .lineage-map { grid-template-columns: 1fr; }
   .lineage-arrow { transform: rotate(90deg); height: 25px; }
+  .site-nav { gap: .55em; margin-right: .35em; font-size: .78em; }
 }

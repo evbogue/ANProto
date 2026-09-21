@@ -18,7 +18,11 @@ export const head = async (title, navLabel) => {
     <div id='navbar'>
       <a href='/'><img src='https://wiredove.net/doveorange_sm.png' class='avatar_small' style='vertical-align: middle;'></a>
       <strong>${navText}</strong> 
-      <a class="nav-portfolio" href="/portfolio">portfolio</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">What is ANProto?</a>
+        <a href="/try">Try ANProto</a>
+        <a href="/portfolio">Portfolio</a>
+      </nav>
     </div>
 `;
 };
