@@ -8,6 +8,7 @@ import mediaApp from "./media_app.js";
 import blobHttpApp from "./blob_http_app.js";
 import andfsHttpApp from "./andfs_http_app.js";
 import { portfolio } from "./portfolio.js";
+import { mission } from "./mission.js";
 
 const app = new Hono();
 
@@ -33,6 +34,11 @@ app.route("/andfs", andfsHttpApp);
 
 app.get("/portfolio", async (c) => {
   const html = await head("ANProto — Portfolio") + portfolio + await foot();
+  return await c.html(html);
+});
+
+app.get("/mission", async (c) => {
+  const html = await head("ANProto — Mission") + mission + await foot();
   return await c.html(html);
 });
 

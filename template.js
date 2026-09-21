@@ -20,6 +20,7 @@ export const head = async (title, navLabel) => {
       <strong>${navText}</strong> 
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/">What is ANProto?</a>
+        <a href="/mission">Mission</a>
         <a href="/try">Try ANProto</a>
         <a href="/portfolio">Portfolio</a>
       </nav>
