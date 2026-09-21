@@ -107,9 +107,8 @@ iframe {
 }
 
 #navbar {
-  padding-top: .5em;
-  padding-left: 1em;
-  padding-bottom: .5em;
+  box-sizing: border-box;
+  padding: .5em 1em;
   position: fixed;
   width: 100%;
   z-index: 1;
