@@ -8,6 +8,7 @@ export const mission = `
 
     <section class="message">
       <div class="portfolio-label">WHY</div>
+      <p>I’m <a href="https://evbogue.com/">Ev Bogue</a>, a builder of social software and signed-feed experiments.</p>
       <p>I was banned from Google+ in 2012. A friend was banned from LinkedIn in 2026.</p>
       <p>People spend years building an online presence, then get punished for being rockstars.</p>
       <p>A platform can distribute your work. It should not be able to erase your identity, archive, or relationships.</p>
