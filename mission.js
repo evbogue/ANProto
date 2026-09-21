@@ -19,6 +19,7 @@ export const mission = `
       <div class="mission-grid">
         <div>
           <h2>Make ANProto Wave.</h2>
+          <p class="mission-status"><strong>Not built yet.</strong> This is the next experiment.</p>
           <p>Durable shared work between people, agents, and networks.</p>
         </div>
         <div>
@@ -38,6 +39,7 @@ export const mission = `
 
     <section class="message mission-next">
       <div class="portfolio-label">START HERE</div>
+      <a href="/sandbox"><strong>Open the local sandbox</strong><span>Make signed posts that stay in this browser.</span></a>
       <a href="/try"><strong>Try ANProto</strong><span>Make and open a signed message.</span></a>
       <a href="/portfolio"><strong>See the work</strong><span>Protocol lineage, prototypes, and the current direction.</span></a>
     </section>

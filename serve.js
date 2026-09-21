@@ -9,6 +9,7 @@ import blobHttpApp from "./blob_http_app.js";
 import andfsHttpApp from "./andfs_http_app.js";
 import { portfolio } from "./portfolio.js";
 import { mission } from "./mission.js";
+import { sandbox } from "./sandbox.js";
 
 const app = new Hono();
 
@@ -39,6 +40,11 @@ app.get("/portfolio", async (c) => {
 
 app.get("/mission", async (c) => {
   const html = await head("ANProto — Mission") + mission + await foot();
+  return await c.html(html);
+});
+
+app.get("/sandbox", async (c) => {
+  const html = await head("ANProto — Local Sandbox", "Sandbox") + sandbox + await foot();
   return await c.html(html);
 });
 

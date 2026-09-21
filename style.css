@@ -211,6 +211,7 @@ iframe {
 .prototype-links strong, .prototype-links span { display: block; }
 .prototype-links span { color: #777; font-size: .9em; line-height: 1.15; }
 .portfolio-now { font-size: 1.05em; }
+.mission-status { color: #fe7a00; font-size: .92em; }
 .mission-hero h1 { font-size: 2.35em; line-height: 1.02; max-width: 14ch; }
 .mission-page h2 { font-size: 1.25em; line-height: 1.1; }
 .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 10px; }
@@ -224,6 +225,15 @@ iframe {
 .mission-next a:hover { border-color: #fe7a00; text-decoration: none; }
 .mission-next strong, .mission-next span { display: block; }
 .mission-next span { color: #777; font-size: .9em; line-height: 1.15; }
+.sandbox-warning { border-left: 3px solid #fe7a00; }
+.sandbox-actions { display: flex; align-items: center; gap: 12px; }
+.sandbox-notice { min-height: 1.3em; color: #777; font-size: .92em; }
+.sandbox-feed { display: grid; gap: 5px; margin-top: 10px; }
+.sandbox-post { background: #f5f5f5; border: 1px solid #e4e4e4; border-radius: 5px; padding: 10px; }
+.sandbox-post p { white-space: pre-wrap; }
+.sandbox-post-meta { color: #777; font-family: "Roboto Mono", monospace; font-size: .75em; }
+.sandbox-post summary { cursor: pointer; color: #045fd0; font-size: .9em; }
+.sandbox-post code { box-sizing: border-box; width: 100%; margin-top: 7px; font-size: .72em; }
 
 @media (prefers-color-scheme: dark) {
   .lineage-node { background: #333; border-color: #444; }
@@ -231,11 +241,12 @@ iframe {
   .timeline li { border-color: #333; }
   .prototype-links a { background: #333; border-color: #444; }
   .mission-next a { background: #333; border-color: #444; }
+  .sandbox-post { background: #333; border-color: #444; }
 }
 
 @media (max-width: 580px) {
   #navbar { display: flex; align-items: center; gap: .45em; padding-left: .65em; padding-right: .65em; }
-  #navbar > strong { font-size: .85em; white-space: nowrap; }
+  #navbar > strong { font-size: .78em; white-space: nowrap; }
   .site-nav { float: none; margin-left: auto; margin-right: 0; gap: .4em; font-size: .7em; }
   .site-nav a { white-space: nowrap; }
   .lineage-map { grid-template-columns: 1fr; }
@@ -244,4 +255,5 @@ iframe {
   .mission-grid, .mission-next { grid-template-columns: 1fr; }
   .mission-flow { align-items: stretch; flex-direction: column; gap: 3px; }
   .mission-flow b { transform: rotate(90deg); height: 20px; }
+  .sandbox-actions { align-items: flex-start; flex-direction: column; gap: 5px; }
 }
