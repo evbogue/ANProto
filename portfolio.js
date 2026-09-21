@@ -35,6 +35,17 @@ export const portfolio = `
       </ol>
     </div>
 
+    <div class="message">
+      <div class="portfolio-label">WORKING PROTOTYPES</div>
+      <div class="prototype-links">
+        <a href="/try"><strong>Try ANProto</strong><span>Generate, sign, and open a message.</span></a>
+        <a href="/media"><strong>ANProto media</strong><span>Create and verify content-addressed blobs.</span></a>
+        <a href="https://wiredove.net/"><strong>Wiredove</strong><span>Live ANProto social client.</span></a>
+        <a href="https://bogbook.com/"><strong>Bogbook</strong><span>Live signed-feed experiment.</span></a>
+        <a href="https://ssb.evbogue.com/"><strong>SSB / Decent</strong><span>Live peer-to-peer social node.</span></a>
+      </div>
+    </div>
+
     <div class="message portfolio-now">
       <div class="portfolio-label">NOW</div>
       <p><strong>Wiredove:</strong> interoperable posts and media → delegated agents → durable shared work.</p>
