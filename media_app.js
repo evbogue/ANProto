@@ -7,8 +7,8 @@ app.get("/", async (c) => {
   const body = `
   <div id="scroller">
     <div class="message">
-      <h1>ANProto blobs: audio + video</h1>
-      <p>Upload media from your phone, or record directly with the camera/microphone. The bytes are content-addressed, verified, and then played back from the blob store.</p>
+      <h1>ANProto media: AndFS v1</h1>
+      <p>Upload media from your phone, or record directly with the camera/microphone. Files use AndFS v1: verified 256 KiB blocks plus one manifest hash.</p>
 
       <h3>Upload</h3>
       <input id="upload" type="file" accept="audio/*,video/*" multiple>
@@ -28,9 +28,8 @@ app.get("/", async (c) => {
       <h3>Network demos</h3>
       <p>After adding media, each result includes:</p>
       <ul>
-        <li><strong>HTTP round trip</strong> — upload/download through the server blob adapter.</li>
-        <li><strong>Multi-peer download</strong> — distribute pieces across three peers and reassemble them.</li>
-        <li><strong>Stream from peers</strong> — feed verified chunks to playback as they arrive when the browser supports MediaSource for that format.</li>
+        <li><strong>HTTP round trip</strong> — upload/download verified AndFS blocks through the demo server.</li>
+        <li><strong>Multi-peer download</strong> — distribute AndFS blocks across three peers and reconstruct the file.</li>
       </ul>
     </div>
 
@@ -40,7 +39,7 @@ app.get("/", async (c) => {
   <script type="module" src="/media_demo.js"></script>
   `;
 
-  return c.html(await head("ANProto Media Blobs", "Media Blobs") + body + await foot());
+  return c.html(await head("ANProto Media: AndFS v1", "Media") + body + await foot());
 });
 
 export default app;

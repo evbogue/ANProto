@@ -1,4 +1,6 @@
-# ANProto blobs
+# Legacy ANProto blobs
+
+> The live ANProto media demo now uses [AndFS v1](https://github.com/evbogue/andfs): 256 KiB content-addressed blocks and a URL-safe manifest hash. This document describes the earlier `anblob:v1` prototype, which remains available for compatibility experiments but is not the current media format.
 
 ANProto artifacts authenticate **meaning**. Blob IDs authenticate **bytes**.
 

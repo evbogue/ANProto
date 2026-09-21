@@ -15,7 +15,7 @@ ed25519 keypairs sign timestamp + hash in base64
 + [Rust implementation](https://github.com/vic/anproto-rs/) [by Vic]
 + [Python implementation](https://github.com/macauleyjustin/ANproto-Python) [by Justin]
   
-try it at [anproto.com/try](https://anproto.com/try), test audio/video blobs at **/media**, or use a client such as [wiredove](https://wiredove.net/)
+try it at [anproto.com/try](https://anproto.com/try), test [AndFS v1 audio/video media](https://anproto.com/media), or use a client such as [wiredove](https://wiredove.net/)
 
 ***
 
@@ -56,7 +56,9 @@ console.log(await an.open('BSY7/er4VJIu08o39NaRAiPY/MAvd7oQhlGCRDABjYU=yVpD8i7d3
 
 ---
 
-### Content-addressed blobs
+### Legacy content-addressed blobs
+
+The browser media demo uses AndFS v1. The `anblob:v1` helpers below are retained as an earlier ANProto storage experiment, not the current media format.
 
 ANProto artifacts can point at verified files without embedding the file itself.
 
