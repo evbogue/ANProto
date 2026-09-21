@@ -5,6 +5,8 @@ const POSTS_NAME = "anproto-sandbox-posts-v1";
 
 const body = document.querySelector("#sandbox-body");
 const publish = document.querySelector("#sandbox-publish");
+const generateKey = document.querySelector("#sandbox-generate-key");
+const clear = document.querySelector("#sandbox-clear");
 const identity = document.querySelector("#sandbox-identity");
 const notice = document.querySelector("#sandbox-notice");
 const feed = document.querySelector("#sandbox-feed");
@@ -23,6 +25,7 @@ const identityLabel = (keypair) => `Local identity: ${keypair.slice(0, 12)}…`;
 const render = async () => {
   const keypair = localStorage.getItem(KEY_NAME);
   identity.textContent = keypair ? identityLabel(keypair) : "No local identity yet";
+  publish.disabled = !keypair;
   const posts = readPosts();
   empty.hidden = posts.length > 0;
   feed.replaceChildren();
@@ -51,6 +54,24 @@ const render = async () => {
   }
 };
 
+generateKey.addEventListener("click", async () => {
+  const exists = localStorage.getItem(KEY_NAME);
+  if (exists && !confirm("Replace this browser’s local identity? Existing posts will remain signed by the old key.")) return;
+  const keypair = await an.gen();
+  localStorage.setItem(KEY_NAME, keypair);
+  notice.textContent = "New local identity generated. It never leaves this browser.";
+  await render();
+});
+
+clear.addEventListener("click", async () => {
+  if (!confirm("Clear this browser’s sandbox key and every local sandbox post? This cannot be undone.")) return;
+  localStorage.removeItem(KEY_NAME);
+  localStorage.removeItem(POSTS_NAME);
+  body.value = "";
+  notice.textContent = "Local sandbox data cleared.";
+  await render();
+});
+
 publish.addEventListener("click", async () => {
   const text = body.value.trim();
   if (!text) {
@@ -60,11 +81,8 @@ publish.addEventListener("click", async () => {
 
   publish.disabled = true;
   try {
-    let keypair = localStorage.getItem(KEY_NAME);
-    if (!keypair) {
-      keypair = await an.gen();
-      localStorage.setItem(KEY_NAME, keypair);
-    }
+    const keypair = localStorage.getItem(KEY_NAME);
+    if (!keypair) throw Error("Generate a local key before posting.");
     const timestamp = Date.now();
     const hash = await an.hash(text);
     const message = await an.sign(hash, keypair);

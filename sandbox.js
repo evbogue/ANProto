@@ -17,10 +17,19 @@ export const sandbox = `
       <label for="sandbox-body">A short post</label>
       <textarea id="sandbox-body" maxlength="2000" placeholder="What are you working on?"></textarea>
       <div class="sandbox-actions">
-        <button id="sandbox-publish" type="button">Sign and save locally</button>
+        <button id="sandbox-publish" type="button" disabled>Sign and save locally</button>
         <span id="sandbox-identity" class="pubkey"></span>
       </div>
       <p id="sandbox-notice" class="sandbox-notice" aria-live="polite"></p>
+    </section>
+
+    <section class="message sandbox-identity-controls">
+      <div class="portfolio-label">LOCAL IDENTITY</div>
+      <p>Generate a key here. It stays in this browser and signs your sandbox posts.</p>
+      <div class="sandbox-actions">
+        <button id="sandbox-generate-key" type="button">Generate local key</button>
+        <button id="sandbox-clear" type="button">Clear sandbox data</button>
+      </div>
     </section>
 
     <section class="message">
