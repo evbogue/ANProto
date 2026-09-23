@@ -56,23 +56,4 @@ console.log(await an.open('BSY7/er4VJIu08o39NaRAiPY/MAvd7oQhlGCRDABjYU=yVpD8i7d3
 
 ---
 
-### Legacy content-addressed blobs
-
-The browser media demo uses AndFS v1. The `anblob:v1` helpers below are retained as an earlier ANProto storage experiment, not the current media format.
-
-ANProto artifacts can point at verified files without embedding the file itself.
-
-```js
-const store = new an.blob.MemoryBlobStore()
-const id = await an.blob.putBlob(file, store)
-const bytes = await an.blob.getBlob(id, store)
-console.log(await an.blob.verifyBlob(id, bytes)) // true
-```
-
-Small blobs are SHA-256 addressed directly. Files larger than 1 MiB are split into deterministic 1 MiB chunks with a verified manifest.
-
-See [BLOBS.md](./BLOBS.md) for the format, tests, storage interface, and phone audio/video demo.
-
----
-
 MIT
